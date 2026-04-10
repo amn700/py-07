@@ -1,9 +1,27 @@
 import abc
+import typing
 
 from ex1.capabilities import HealCapability, TransformCapability
 
+
 class InvalidCreatureForStrategy(Exception):
     pass
+
+
+class _Attackable(typing.Protocol):
+    def attack(self) -> str: ...
+
+
+class _TransformingCreature(_Attackable, typing.Protocol):
+    def transform(self) -> str: ...
+
+    def revert(self) -> str: ...
+
+
+class _HealingCreature(_Attackable, typing.Protocol):
+    def heal(self, target: object) -> str: ...
+
+
 class BattleStrategy(abc.ABC):
     @abc.abstractmethod
     def act(self, creature: object) -> None:
@@ -19,7 +37,8 @@ class NormalStrategy(BattleStrategy):
         return True
 
     def act(self, creature: object) -> None:
-        print(creature.attack())
+        attackable = typing.cast(_Attackable, creature)
+        print(attackable.attack())
 
 
 class AggressiveStrategy(BattleStrategy):
@@ -30,12 +49,14 @@ class AggressiveStrategy(BattleStrategy):
         if not self.is_valid(creature):
             creature_name = creature.__class__.__name__
             raise InvalidCreatureForStrategy(
-                f"Invalid Creature '{creature_name}' for this aggressive strategy"
+                f"Invalid Creature '{creature_name}' \
+for this aggressive strategy"
             )
 
-        print(creature.transform())
-        print(creature.attack())
-        print(creature.revert())
+        transforming = typing.cast(_TransformingCreature, creature)
+        print(transforming.transform())
+        print(transforming.attack())
+        print(transforming.revert())
 
 
 class DefensiveStrategy(BattleStrategy):
@@ -46,8 +67,10 @@ class DefensiveStrategy(BattleStrategy):
         if not self.is_valid(creature):
             creature_name = creature.__class__.__name__
             raise InvalidCreatureForStrategy(
-                f"Invalid Creature '{creature_name}' for this defensive strategy"
+                f"Invalid Creature '{creature_name}' \
+for this defensive strategy"
             )
 
-        print(creature.attack())
-        print(creature.heal(creature))
+        healing = typing.cast(_HealingCreature, creature)
+        print(healing.attack())
+        print(healing.heal(healing))
