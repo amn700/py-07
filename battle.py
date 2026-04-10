@@ -48,7 +48,9 @@ def main() -> None:
     aqua_factory = ex0.AquaFactory()
 
     test_factory(flame_factory)
+    print()
     test_factory(aqua_factory)
+    print()
     test_battle(flame_factory, aqua_factory)
 
 
